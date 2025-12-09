@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AdvancedAI DevTeam</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              background: '#0f172a',
+              surface: '#1e293b',
+              primary: '#3b82f6',
+              secondary: '#64748b',
+              accent: '#8b5cf6',
+              success: '#10b981',
+              warning: '#f59e0b',
+              danger: '#ef4444',
+            },
+            fontFamily: {
+              mono: ['Fira Code', 'monospace'],
+              sans: ['Inter', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <script>
+      // Polyfill Node.js globals for browser environment
+      window.process = {
+        env: {
+          NODE_ENV: 'development',
+          API_KEY: '' 
+        }
+      };
+      window.global = window;
+      window.Buffer = window.Buffer || { isBuffer: () => false };
+    </script>
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom": "https://esm.sh/react-dom@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react/jsx-runtime": "https://esm.sh/react@18.2.0/jsx-runtime",
+    "lucide-react": "https://esm.sh/lucide-react@0.263.1",
+    "js-yaml": "https://esm.sh/js-yaml@4.1.0",
+    "prismjs": "https://esm.sh/prismjs@1.29.0",
+    "prismjs/components/prism-clike": "https://esm.sh/prismjs@1.29.0/components/prism-clike",
+    "prismjs/components/prism-javascript": "https://esm.sh/prismjs@1.29.0/components/prism-javascript",
+    "prismjs/components/prism-markup": "https://esm.sh/prismjs@1.29.0/components/prism-markup",
+    "prismjs/components/prism-jsx": "https://esm.sh/prismjs@1.29.0/components/prism-jsx",
+    "prismjs/components/prism-json": "https://esm.sh/prismjs@1.29.0/components/prism-json",
+    "prismjs/components/prism-yaml": "https://esm.sh/prismjs@1.29.0/components/prism-yaml",
+    "prismjs/components/prism-python": "https://esm.sh/prismjs@1.29.0/components/prism-python",
+    "prismjs/components/prism-typescript": "https://esm.sh/prismjs@1.29.0/components/prism-typescript",
+    "prismjs/components/prism-tsx": "https://esm.sh/prismjs@1.29.0/components/prism-tsx",
+    "prismjs/components/prism-bash": "https://esm.sh/prismjs@1.29.0/components/prism-bash",
+    "prismjs/components/prism-markdown": "https://esm.sh/prismjs@1.29.0/components/prism-markdown",
+    "prismjs/components/prism-hcl": "https://esm.sh/prismjs@1.29.0/components/prism-hcl",
+    "@google/genai": "https://esm.sh/@google/genai@0.0.21?bundle-deps",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
+    "react/": "https://aistudiocdn.com/react@^19.2.1/",
+    "prismjs/": "https://aistudiocdn.com/prismjs@^1.30.0/"
+  }
+}
+</script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      body {
+        background-color: #0f172a;
+        color: #f8fafc;
+        font-family: 'Inter', sans-serif;
+      }
+      /* Custom scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1e293b; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #475569; 
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #64748b; 
+      }
+      .animate-blink {
+        animation: blink 1s step-end infinite;
+      }
+      @keyframes blink {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
