@@ -3,7 +3,7 @@ import { Project, ProjectStatus, Artifact, Candidate, AgentRole } from '../types
 import { simulationService } from '../services/simulationService';
 import { Terminal } from '../components/Terminal';
 import { Button, Card, Badge, ProgressBar } from '../components/ui';
-import { ArrowLeft, Play, FileText, Code, GitCommit, CheckCircle, Shield, AlertTriangle, Trophy, Clock, Cpu, Activity, Zap, Copy, Check } from 'lucide-react';
+import { ArrowLeft, Play, FileText, Code, GitCommit, CheckCircle, Shield, AlertTriangle, Trophy, Clock, Cpu, Activity, Zap, Copy, Check, Loader2 } from 'lucide-react';
 import { AGENT_COLORS } from '../constants';
 import Prism from 'prismjs';
 import { load, dump } from 'js-yaml';
@@ -16,36 +16,39 @@ interface ProjectDetailProps {
 export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack }) => {
   const [project, setProject] = useState<Project | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'artifacts' | 'race'>('overview');
+  const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
 
   useEffect(() => {
     // Dynamic import sequence to ensure dependencies load in correct order
     const loadPrismLanguages = async () => {
       try {
         // Expose Prism to window for plugins/components that expect a global
-        (window as any).Prism = Prism;
+        if (Prism) {
+          (window as any).Prism = Prism;
+          
+          // Core dependencies first
+          await import('prismjs/components/prism-clike');
+          await import('prismjs/components/prism-markup'); // For XML/HTML/SVG/MathML
+          
+          // Base languages
+          await import('prismjs/components/prism-javascript');
+          await import('prismjs/components/prism-bash');
+          await import('prismjs/components/prism-json');
+          await import('prismjs/components/prism-yaml');
+          await import('prismjs/components/prism-python');
+          
+          // Extended languages
+          await import('prismjs/components/prism-markdown');
+          await import('prismjs/components/prism-hcl'); // For Terraform
+          
+          // Derived languages
+          await import('prismjs/components/prism-jsx'); // Depends on javascript & markup
+          await import('prismjs/components/prism-typescript'); // Depends on javascript
+          await import('prismjs/components/prism-tsx'); // Depends on jsx & typescript
 
-        // Core dependencies first
-        await import('prismjs/components/prism-clike');
-        await import('prismjs/components/prism-markup'); // For XML/HTML/SVG/MathML
-        
-        // Base languages
-        await import('prismjs/components/prism-javascript');
-        await import('prismjs/components/prism-bash');
-        await import('prismjs/components/prism-json');
-        await import('prismjs/components/prism-yaml');
-        await import('prismjs/components/prism-python');
-        
-        // Extended languages
-        await import('prismjs/components/prism-markdown');
-        await import('prismjs/components/prism-hcl'); // For Terraform
-        
-        // Derived languages
-        await import('prismjs/components/prism-jsx'); // Depends on javascript & markup
-        await import('prismjs/components/prism-typescript'); // Depends on javascript
-        await import('prismjs/components/prism-tsx'); // Depends on jsx & typescript
-
-        // Trigger highlight after loading
-        Prism.highlightAll();
+          // Trigger highlight after loading
+          Prism.highlightAll();
+        }
       } catch (err) {
         console.warn('Prism language loading failed:', err);
       }
@@ -57,17 +60,34 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
   useEffect(() => {
     const unsubscribe = simulationService.subscribe(projectId, (updatedProject) => {
       setProject(updatedProject);
+      // Auto-switch to Race Mode when architecture is done and we are in overview
       if (updatedProject.status === ProjectStatus.RACE_MODE && activeTab === 'overview') {
         setActiveTab('race');
       }
+      // Auto-select first artifact if none selected
+      if (updatedProject.artifacts.length > 0 && !selectedArtifactId) {
+        setSelectedArtifactId(updatedProject.artifacts[0].id);
+      }
     });
     return unsubscribe;
-  }, [projectId, activeTab]);
+  }, [projectId, activeTab, selectedArtifactId]);
 
   if (!project) return <div className="flex h-screen items-center justify-center text-gray-400">Loading project data...</div>;
 
   const startSimulation = () => {
     simulationService.startSimulation(project.id);
+  };
+
+  const handleViewArtifacts = () => {
+    setActiveTab('artifacts');
+    // Prioritize showing code artifacts when coming from "View Source Code"
+    const codeArtifact = project.artifacts.find(a => a.type === 'code' || a.name.endsWith('.py') || a.name.endsWith('.tsx'));
+    
+    if (codeArtifact) {
+      setSelectedArtifactId(codeArtifact.id);
+    } else if (!selectedArtifactId && project.artifacts.length > 0) {
+      setSelectedArtifactId(project.artifacts[0].id);
+    }
   };
 
   return (
@@ -141,10 +161,16 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
              </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 bg-background relative">
+          <div className={`flex-1 overflow-y-auto p-6 bg-background relative ${activeTab === 'artifacts' ? 'flex flex-col' : ''}`}>
              {activeTab === 'overview' && <OverviewTab project={project} />}
-             {activeTab === 'race' && <RaceModeTab candidates={project.candidates} onViewArtifacts={() => setActiveTab('artifacts')} />}
-             {activeTab === 'artifacts' && <ArtifactsTab artifacts={project.artifacts} />}
+             {activeTab === 'race' && <RaceModeTab candidates={project.candidates} onViewArtifacts={handleViewArtifacts} />}
+             {activeTab === 'artifacts' && (
+               <ArtifactsTab 
+                 artifacts={project.artifacts} 
+                 selectedArtifactId={selectedArtifactId}
+                 onSelectArtifact={setSelectedArtifactId}
+               />
+             )}
           </div>
 
           <div className="h-64 shrink-0 border-t border-gray-800">
@@ -273,21 +299,22 @@ const MetricBox = ({ icon: Icon, label, value }: any) => (
   </div>
 );
 
-const ArtifactsTab = ({ artifacts }: { artifacts: Artifact[] }) => {
-  const [selectedArtifact, setSelectedArtifact] = useState<Artifact | null>(artifacts[0] || null);
+interface ArtifactsTabProps {
+  artifacts: Artifact[];
+  selectedArtifactId: string | null;
+  onSelectArtifact: (id: string) => void;
+}
+
+const ArtifactsTab: React.FC<ArtifactsTabProps> = ({ artifacts, selectedArtifactId, onSelectArtifact }) => {
   const [copied, setCopied] = useState(false);
   const codeRef = useRef<HTMLElement>(null);
+  
+  // Resolve the artifact object from the ID, or fallback to first if ID is invalid/null
+  // We use fallback for render safety.
+  const selectedArtifact = artifacts.find(a => a.id === selectedArtifactId) || artifacts[0] || null;
 
   useEffect(() => {
-    if (!selectedArtifact && artifacts.length > 0) {
-      setSelectedArtifact(artifacts[0]);
-    }
-  }, [artifacts, selectedArtifact]);
-
-  // Use useLayoutEffect to highlight immediately after render but before paint if possible,
-  // or standard useEffect. Using highlighted element specifically avoids re-scanning the whole DOM.
-  useEffect(() => {
-    if (selectedArtifact && codeRef.current) {
+    if (selectedArtifact && codeRef.current && Prism) {
        Prism.highlightElement(codeRef.current);
        setCopied(false);
     }
@@ -298,11 +325,9 @@ const ArtifactsTab = ({ artifacts }: { artifacts: Artifact[] }) => {
 
     if (artifact.type === 'json') {
       try {
-        // If it's already a string, parse it first
         const parsed = typeof artifact.content === 'string' ? JSON.parse(artifact.content) : artifact.content;
         return JSON.stringify(parsed, null, 2);
       } catch (e) {
-        // Fallback if it's not valid JSON
         return artifact.content;
       }
     }
@@ -330,12 +355,10 @@ const ArtifactsTab = ({ artifacts }: { artifacts: Artifact[] }) => {
   const getLanguageClass = (type: string, name: string) => {
     const ext = name.split('.').pop()?.toLowerCase();
     
-    // Check type first
     if (type === 'json') return 'language-json';
     if (type === 'yaml') return 'language-yaml';
     if (type === 'markdown') return 'language-markdown';
 
-    // Check extension
     switch (ext) {
       case 'js': return 'language-javascript';
       case 'ts': return 'language-typescript';
@@ -357,15 +380,39 @@ const ArtifactsTab = ({ artifacts }: { artifacts: Artifact[] }) => {
 
   if (artifacts.length === 0) {
     return (
-       <div className="flex flex-col items-center justify-center h-full text-gray-500 bg-surface/30 rounded-lg m-4 border border-dashed border-gray-800">
-         <div className="bg-surface p-6 rounded-full mb-6 ring-1 ring-gray-700 shadow-lg">
-           <FileText size={40} className="text-gray-400" />
+       <div className="flex flex-col items-center justify-center h-full text-gray-500 bg-[#0f172a] rounded-xl border-2 border-dashed border-gray-800 p-12">
+         <div className="relative mb-6">
+           <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl animate-pulse"></div>
+           <div className="bg-surface p-6 rounded-full ring-1 ring-gray-700 shadow-2xl relative">
+             <FileText size={48} className="text-gray-400" />
+             <div className="absolute -bottom-1 -right-1 bg-surface rounded-full p-1.5 ring-1 ring-gray-800">
+               <Loader2 size={16} className="text-primary animate-spin" />
+             </div>
+           </div>
          </div>
-         <h3 className="text-xl font-medium text-gray-200 mb-2">No Artifacts Generated Yet</h3>
-         <p className="text-gray-500 text-center max-w-sm leading-relaxed">
-           The autonomous agents are analyzing requirements and designing the architecture. 
-           Source code and documentation will appear here automatically.
+         <h3 className="text-xl font-bold text-gray-200 mb-3">Generating Artifacts...</h3>
+         <p className="text-gray-400 text-center max-w-md leading-relaxed mb-8">
+           The autonomous agent swarm is currently working on your project. 
+           Source code files, architectural diagrams, and configuration files 
+           will populate here in real-time as they are created.
          </p>
+         
+         <div className="flex gap-4">
+            <div className="flex flex-col items-center gap-2">
+               <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '0ms' }}></div>
+               <span className="text-[10px] uppercase tracking-widest text-gray-600">Plan</span>
+            </div>
+            <div className="w-8 h-px bg-gray-800 mt-1"></div>
+            <div className="flex flex-col items-center gap-2">
+               <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '150ms' }}></div>
+               <span className="text-[10px] uppercase tracking-widest text-gray-600">Code</span>
+            </div>
+            <div className="w-8 h-px bg-gray-800 mt-1"></div>
+            <div className="flex flex-col items-center gap-2">
+               <div className="w-2 h-2 rounded-full bg-primary animate-bounce" style={{ animationDelay: '300ms' }}></div>
+               <span className="text-[10px] uppercase tracking-widest text-gray-600">Review</span>
+            </div>
+         </div>
        </div>
     );
   }
@@ -374,16 +421,17 @@ const ArtifactsTab = ({ artifacts }: { artifacts: Artifact[] }) => {
   const languageClass = selectedArtifact ? getLanguageClass(selectedArtifact.type, selectedArtifact.name) : '';
 
   return (
-    <div className="flex h-full border border-gray-800 rounded-lg overflow-hidden bg-surface shadow-2xl">
-      <div className="w-72 border-r border-gray-800 overflow-y-auto shrink-0 bg-surface">
-         <div className="p-3 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-800">
+    <div className="flex h-full border border-gray-800 rounded-lg overflow-hidden shadow-2xl bg-[#0f172a] flex-1">
+      {/* File Explorer Sidebar */}
+      <div className="w-72 border-r border-gray-800 overflow-y-auto shrink-0 bg-[#0f172a]">
+         <div className="p-3 text-xs font-bold text-gray-500 uppercase tracking-wider border-b border-gray-800 bg-[#0f172a]">
            Files Explorer
          </div>
          {artifacts.map(art => (
            <div 
              key={art.id} 
-             onClick={() => setSelectedArtifact(art)}
-             className={`p-3 border-b border-gray-800/50 cursor-pointer hover:bg-white/5 transition-colors flex items-center gap-3 ${selectedArtifact?.id === art.id ? 'bg-primary/10 border-l-2 border-l-primary text-white' : 'text-gray-400'}`}
+             onClick={() => onSelectArtifact(art.id)}
+             className={`p-3 border-b border-gray-800/50 cursor-pointer transition-colors flex items-center gap-3 ${selectedArtifact?.id === art.id ? 'bg-primary/10 border-l-2 border-l-primary text-white' : 'text-gray-400 hover:bg-white/5'}`}
            >
              <Code size={16} className={selectedArtifact?.id === art.id ? 'text-primary' : 'text-gray-600'} />
              <div className="overflow-hidden">
@@ -393,6 +441,8 @@ const ArtifactsTab = ({ artifacts }: { artifacts: Artifact[] }) => {
            </div>
          ))}
       </div>
+      
+      {/* Code Viewer Area */}
       <div className="flex-1 bg-[#1e1e1e] flex flex-col min-w-0">
         {selectedArtifact ? (
           <>
@@ -406,8 +456,8 @@ const ArtifactsTab = ({ artifacts }: { artifacts: Artifact[] }) => {
                 {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
-            <div className="flex-1 overflow-auto relative">
-              <pre className="!bg-transparent !m-0 !p-4 min-h-full text-sm">
+            <div className="flex-1 overflow-auto relative custom-scrollbar">
+              <pre className="!bg-[#1e1e1e] !m-0 !p-4 min-h-full text-sm">
                 <code ref={codeRef} className={languageClass}>
                   {formattedContent}
                 </code>

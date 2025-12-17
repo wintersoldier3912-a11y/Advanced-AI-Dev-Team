@@ -28,15 +28,35 @@
       }
     </script>
     <script>
-      // Polyfill Node.js globals for browser environment
-      window.process = {
+      // Robust Polyfills for browser environment
+      window.process = window.process || {
         env: {
           NODE_ENV: 'development',
           API_KEY: '' 
-        }
+        },
+        version: ''
       };
       window.global = window;
-      window.Buffer = window.Buffer || { isBuffer: () => false };
+      
+      // Buffer polyfill for libraries like js-yaml and google-genai
+      window.Buffer = window.Buffer || { 
+        isBuffer: (obj) => obj && obj.constructor && obj.constructor.name === 'Buffer',
+        from: (data, encoding) => {
+          if (typeof data === 'string') {
+             return new TextEncoder().encode(data);
+          }
+          return new Uint8Array(data);
+        }, 
+        alloc: (size) => new Uint8Array(size),
+        concat: (arr) => {
+            let len = 0;
+            for(let c of arr) len += c.length;
+            let out = new Uint8Array(len);
+            let off = 0;
+            for(let c of arr) { out.set(c, off); off += c.length; }
+            return out;
+        }
+      };
     </script>
     <script type="importmap">
 {
@@ -60,10 +80,7 @@
     "prismjs/components/prism-bash": "https://esm.sh/prismjs@1.29.0/components/prism-bash",
     "prismjs/components/prism-markdown": "https://esm.sh/prismjs@1.29.0/components/prism-markdown",
     "prismjs/components/prism-hcl": "https://esm.sh/prismjs@1.29.0/components/prism-hcl",
-    "@google/genai": "https://esm.sh/@google/genai@0.0.21?bundle-deps",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.1/",
-    "react/": "https://aistudiocdn.com/react@^19.2.1/",
-    "prismjs/": "https://aistudiocdn.com/prismjs@^1.30.0/"
+    "@google/genai": "https://esm.sh/@google/genai@0.0.21?bundle-deps"
   }
 }
 </script>
