@@ -81,17 +81,29 @@ class SimulationService {
     const project = this.getProject(projectId);
     if (!project) return;
 
-    // --- PHASE 1: PLANNING (PM, PO, AI-PM) ---
+    // --- PHASE 1: PLANNING (PM, PO, AI-PM, RESEARCHER) ---
     if (tick === 2) {
-      this.addLog(projectId, AgentRole.PRODUCT_MANAGER, 'Drafting initial Product Requirements Document (PRD)...', 'info');
+      this.addLog(projectId, AgentRole.RESEARCHER, 'Analyzing market trends and competitor solutions...', 'info');
     }
     if (tick === 3) {
-      this.addLog(projectId, AgentRole.PRODUCT_OWNER, 'Refining backlog. prioritizing user stories based on business value.', 'info');
+      this.addLog(projectId, AgentRole.RESEARCHER, 'Feasibility study complete. Identified 3 key technical risks.', 'success');
+      project.artifacts.push({
+        id: uuid(),
+        name: 'planning/feasibility_study.md',
+        type: 'markdown',
+        content: '# Feasibility Study\n\n## Risks\n1. Real-time latency\n2. AI model cost\n3. Data privacy compliance\n\n## Recommendation\nProceed with Microservices architecture.'
+      });
     }
     if (tick === 4) {
-      this.addLog(projectId, AgentRole.AI_PRODUCT_MANAGER, 'Evaluating AI feasibility and defining model capability requirements.', 'info');
+      this.addLog(projectId, AgentRole.PRODUCT_MANAGER, 'Drafting initial Product Requirements Document (PRD) based on research...', 'info');
     }
     if (tick === 5) {
+      this.addLog(projectId, AgentRole.PRODUCT_OWNER, 'Refining backlog. Prioritizing user stories based on business value.', 'info');
+    }
+    if (tick === 6) {
+      this.addLog(projectId, AgentRole.AI_PRODUCT_MANAGER, 'Evaluating AI feasibility and defining model capability requirements.', 'info');
+    }
+    if (tick === 7) {
       project.artifacts.push({
         id: uuid(),
         name: 'PRD.json',
@@ -104,13 +116,13 @@ class SimulationService {
     }
 
     // --- PHASE 2: ARCHITECT & DESIGN (RAG + UI/UX) ---
-    if (tick === 6) {
+    if (tick === 8) {
       this.addLog(projectId, AgentRole.UI_UX_DESIGNER, 'Creating high-fidelity mockups and design system tokens.', 'info');
     }
-    if (tick === 7) {
+    if (tick === 9) {
       this.addLog(projectId, AgentRole.ARCHITECT, 'RAG: Querying Vector DB for similar system designs...', 'warning');
     }
-    if (tick === 8) {
+    if (tick === 10) {
       project.artifacts.push({
         id: uuid(),
         name: 'design/theme.css',
@@ -119,10 +131,10 @@ class SimulationService {
       });
       this.addLog(projectId, AgentRole.UI_UX_DESIGNER, 'Design System finalized. Exporting CSS variables.', 'success');
     }
-    if (tick === 9) {
+    if (tick === 11) {
       this.addLog(projectId, AgentRole.ARCHITECT, 'Retrieved 3 high-confidence patterns. Creating Microservices architecture.', 'info');
     }
-    if (tick === 11) {
+    if (tick === 13) {
       project.artifacts.push({
         id: uuid(),
         name: 'architecture/system_design.json',

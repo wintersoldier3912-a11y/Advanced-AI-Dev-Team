@@ -97,6 +97,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
 
   const agentOrder = [
     AgentRole.IT_PROJECT_MANAGER,
+    AgentRole.RESEARCHER,
     AgentRole.PRODUCT_MANAGER,
     AgentRole.PRODUCT_OWNER,
     AgentRole.AI_PRODUCT_MANAGER,
@@ -212,7 +213,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
 };
 
 const getActiveAgent = (status: ProjectStatus, role: AgentRole): boolean => {
-  if (status === ProjectStatus.PLANNING && (role === AgentRole.PRODUCT_MANAGER || role === AgentRole.IT_PROJECT_MANAGER || role === AgentRole.PRODUCT_OWNER || role === AgentRole.AI_PRODUCT_MANAGER)) return true;
+  if (status === ProjectStatus.PLANNING && (role === AgentRole.PRODUCT_MANAGER || role === AgentRole.IT_PROJECT_MANAGER || role === AgentRole.PRODUCT_OWNER || role === AgentRole.AI_PRODUCT_MANAGER || role === AgentRole.RESEARCHER)) return true;
   if (status === ProjectStatus.ARCHITECTING && (role === AgentRole.ARCHITECT || role === AgentRole.UI_UX_DESIGNER)) return true;
   if (status === ProjectStatus.RACE_MODE && (role === AgentRole.ENGINEER || role === AgentRole.FRONTEND_DEVELOPER || role === AgentRole.BACKEND_DEVELOPER)) return true;
   if (status === ProjectStatus.TESTING && role === AgentRole.QA) return true;

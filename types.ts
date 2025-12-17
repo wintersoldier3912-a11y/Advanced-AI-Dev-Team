@@ -3,6 +3,7 @@ export enum AgentRole {
   PRODUCT_MANAGER = 'Product Manager',
   PRODUCT_OWNER = 'Product Owner',
   AI_PRODUCT_MANAGER = 'AI Product Manager',
+  RESEARCHER = 'Researcher',
   UI_UX_DESIGNER = 'UI/UX Designer',
   ARCHITECT = 'Architect',
   FRONTEND_DEVELOPER = 'Frontend Developer',

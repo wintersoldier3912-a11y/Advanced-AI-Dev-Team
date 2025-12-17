@@ -5,6 +5,7 @@ export const AGENT_COLORS: Record<AgentRole, string> = {
   [AgentRole.PRODUCT_MANAGER]: 'text-pink-400',
   [AgentRole.PRODUCT_OWNER]: 'text-orange-400',
   [AgentRole.AI_PRODUCT_MANAGER]: 'text-fuchsia-400',
+  [AgentRole.RESEARCHER]: 'text-lime-400',
   [AgentRole.UI_UX_DESIGNER]: 'text-rose-400',
   [AgentRole.ARCHITECT]: 'text-purple-400',
   [AgentRole.FRONTEND_DEVELOPER]: 'text-sky-300',
