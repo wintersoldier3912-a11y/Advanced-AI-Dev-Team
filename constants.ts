@@ -1,13 +1,18 @@
 import { AgentRole } from './types';
 
 export const AGENT_COLORS: Record<AgentRole, string> = {
+  [AgentRole.CEO]: 'text-yellow-300 font-extrabold',
+  [AgentRole.COO]: 'text-orange-300',
+  [AgentRole.CTO]: 'text-blue-300 font-bold',
   [AgentRole.IT_PROJECT_MANAGER]: 'text-teal-400',
+  [AgentRole.SCRUM_MASTER]: 'text-amber-400',
   [AgentRole.PRODUCT_MANAGER]: 'text-pink-400',
   [AgentRole.PRODUCT_OWNER]: 'text-orange-400',
   [AgentRole.AI_PRODUCT_MANAGER]: 'text-fuchsia-400',
   [AgentRole.RESEARCHER]: 'text-lime-400',
   [AgentRole.UI_UX_DESIGNER]: 'text-rose-400',
   [AgentRole.ARCHITECT]: 'text-purple-400',
+  [AgentRole.DATABASE_ENGINEER]: 'text-indigo-300',
   [AgentRole.FRONTEND_DEVELOPER]: 'text-sky-300',
   [AgentRole.BACKEND_DEVELOPER]: 'text-violet-400',
   [AgentRole.ENGINEER]: 'text-blue-400',
@@ -16,6 +21,7 @@ export const AGENT_COLORS: Record<AgentRole, string> = {
   [AgentRole.ML_OPS]: 'text-emerald-400',
   [AgentRole.DEVOPS]: 'text-cyan-400',
   [AgentRole.SECURITY]: 'text-red-400',
+  [AgentRole.TECHNICAL_WRITER]: 'text-green-300',
   [AgentRole.DOCS]: 'text-green-400',
 };
 

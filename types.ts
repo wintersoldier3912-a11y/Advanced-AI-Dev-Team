@@ -1,11 +1,16 @@
 export enum AgentRole {
+  CEO = 'CEO',
+  COO = 'COO',
+  CTO = 'CTO',
   IT_PROJECT_MANAGER = 'IT Project Manager',
+  SCRUM_MASTER = 'Scrum Master',
   PRODUCT_MANAGER = 'Product Manager',
   PRODUCT_OWNER = 'Product Owner',
   AI_PRODUCT_MANAGER = 'AI Product Manager',
   RESEARCHER = 'Researcher',
   UI_UX_DESIGNER = 'UI/UX Designer',
   ARCHITECT = 'Architect',
+  DATABASE_ENGINEER = 'Database Engineer',
   FRONTEND_DEVELOPER = 'Frontend Developer',
   BACKEND_DEVELOPER = 'Backend Developer',
   ENGINEER = 'Engineer',
@@ -14,6 +19,7 @@ export enum AgentRole {
   ML_OPS = 'ML Ops',
   DEVOPS = 'DevOps',
   SECURITY = 'Security',
+  TECHNICAL_WRITER = 'Technical Writer',
   DOCS = 'Docs',
 }
 

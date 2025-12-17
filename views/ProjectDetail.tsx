@@ -96,13 +96,18 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
   };
 
   const agentOrder = [
+    AgentRole.CEO,
+    AgentRole.COO,
+    AgentRole.CTO,
     AgentRole.IT_PROJECT_MANAGER,
+    AgentRole.SCRUM_MASTER,
     AgentRole.RESEARCHER,
     AgentRole.PRODUCT_MANAGER,
     AgentRole.PRODUCT_OWNER,
     AgentRole.AI_PRODUCT_MANAGER,
     AgentRole.UI_UX_DESIGNER,
     AgentRole.ARCHITECT,
+    AgentRole.DATABASE_ENGINEER,
     AgentRole.ENGINEER,
     AgentRole.FRONTEND_DEVELOPER,
     AgentRole.BACKEND_DEVELOPER,
@@ -111,6 +116,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
     AgentRole.ML_OPS,
     AgentRole.DEVOPS,
     AgentRole.SECURITY,
+    AgentRole.TECHNICAL_WRITER,
     AgentRole.DOCS
   ];
 
@@ -214,12 +220,12 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
 };
 
 const getActiveAgent = (status: ProjectStatus, role: AgentRole): boolean => {
-  if (status === ProjectStatus.PLANNING && (role === AgentRole.PRODUCT_MANAGER || role === AgentRole.IT_PROJECT_MANAGER || role === AgentRole.PRODUCT_OWNER || role === AgentRole.AI_PRODUCT_MANAGER || role === AgentRole.RESEARCHER)) return true;
-  if (status === ProjectStatus.ARCHITECTING && (role === AgentRole.ARCHITECT || role === AgentRole.UI_UX_DESIGNER)) return true;
-  if (status === ProjectStatus.RACE_MODE && (role === AgentRole.ENGINEER || role === AgentRole.FRONTEND_DEVELOPER || role === AgentRole.BACKEND_DEVELOPER)) return true;
-  if (status === ProjectStatus.TESTING && role === AgentRole.QA) return true;
+  if (status === ProjectStatus.PLANNING && (role === AgentRole.CEO || role === AgentRole.COO || role === AgentRole.PRODUCT_MANAGER || role === AgentRole.IT_PROJECT_MANAGER || role === AgentRole.PRODUCT_OWNER || role === AgentRole.AI_PRODUCT_MANAGER || role === AgentRole.RESEARCHER || role === AgentRole.SCRUM_MASTER)) return true;
+  if (status === ProjectStatus.ARCHITECTING && (role === AgentRole.ARCHITECT || role === AgentRole.CTO || role === AgentRole.DATABASE_ENGINEER || role === AgentRole.UI_UX_DESIGNER || role === AgentRole.SCRUM_MASTER)) return true;
+  if (status === ProjectStatus.RACE_MODE && (role === AgentRole.ENGINEER || role === AgentRole.DATABASE_ENGINEER || role === AgentRole.FRONTEND_DEVELOPER || role === AgentRole.BACKEND_DEVELOPER || role === AgentRole.SCRUM_MASTER)) return true;
+  if (status === ProjectStatus.TESTING && (role === AgentRole.QA || role === AgentRole.SCRUM_MASTER)) return true;
   if (status === ProjectStatus.DEPLOYING && (role === AgentRole.DEVOPS || role === AgentRole.SECURITY || role === AgentRole.GEN_AI_ENGINEER || role === AgentRole.ML_OPS)) return true;
-  if (status === ProjectStatus.COMPLETED && (role === AgentRole.DOCS || role === AgentRole.IT_PROJECT_MANAGER)) return true;
+  if (status === ProjectStatus.COMPLETED && (role === AgentRole.CEO || role === AgentRole.COO || role === AgentRole.TECHNICAL_WRITER || role === AgentRole.DOCS || role === AgentRole.IT_PROJECT_MANAGER || role === AgentRole.SCRUM_MASTER)) return true;
   return false;
 };
 

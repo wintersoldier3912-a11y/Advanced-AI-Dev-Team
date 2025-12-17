@@ -66,7 +66,8 @@ class SimulationService {
     if (this.intervalIds.has(projectId)) return;
 
     project.status = ProjectStatus.PLANNING;
-    this.addLog(projectId, AgentRole.IT_PROJECT_MANAGER, 'Initializing project scope, timeline, and resource allocation.', 'info');
+    this.addLog(projectId, AgentRole.CEO, `Project '${project.name}' approved. Initiating DevTeam protocol. Vision: ${project.description.substring(0, 50)}...`, 'success');
+    this.addLog(projectId, AgentRole.COO, 'Allocating agent compute resources and verifying operations pipelines.', 'info');
     
     let tick = 0;
     const interval = setInterval(() => {
@@ -81,12 +82,15 @@ class SimulationService {
     const project = this.getProject(projectId);
     if (!project) return;
 
-    // --- PHASE 1: PLANNING (PM, PO, AI-PM, RESEARCHER) ---
+    // --- PHASE 1: PLANNING ---
     if (tick === 2) {
-      this.addLog(projectId, AgentRole.RESEARCHER, 'Analyzing market trends and competitor solutions...', 'info');
+      this.addLog(projectId, AgentRole.IT_PROJECT_MANAGER, 'Initializing project scope and resource allocation.', 'info');
     }
     if (tick === 3) {
-      this.addLog(projectId, AgentRole.RESEARCHER, 'Feasibility study complete. Identified 3 key technical risks.', 'success');
+      this.addLog(projectId, AgentRole.RESEARCHER, 'Analyzing market trends and competitor solutions...', 'info');
+    }
+    if (tick === 4) {
+      this.addLog(projectId, AgentRole.SCRUM_MASTER, 'Setting up Sprint 1 rituals and backlog structure.', 'success');
       project.artifacts.push({
         id: uuid(),
         name: 'planning/feasibility_study.md',
@@ -94,47 +98,53 @@ class SimulationService {
         content: '# Feasibility Study\n\n## Risks\n1. Real-time latency\n2. AI model cost\n3. Data privacy compliance\n\n## Recommendation\nProceed with Microservices architecture.'
       });
     }
-    if (tick === 4) {
-      this.addLog(projectId, AgentRole.PRODUCT_MANAGER, 'Drafting initial Product Requirements Document (PRD) based on research...', 'info');
-    }
     if (tick === 5) {
-      this.addLog(projectId, AgentRole.PRODUCT_OWNER, 'Refining backlog. Prioritizing user stories based on business value.', 'info');
+      this.addLog(projectId, AgentRole.PRODUCT_MANAGER, 'Drafting initial Product Requirements Document (PRD)...', 'info');
     }
     if (tick === 6) {
-      this.addLog(projectId, AgentRole.AI_PRODUCT_MANAGER, 'Evaluating AI feasibility and defining model capability requirements.', 'info');
+      this.addLog(projectId, AgentRole.PRODUCT_OWNER, 'Prioritizing user stories based on business value and CEO mission.', 'info');
     }
     if (tick === 7) {
+      this.addLog(projectId, AgentRole.AI_PRODUCT_MANAGER, 'Defining model capability requirements and RAG strategy.', 'info');
+    }
+    if (tick === 8) {
       project.artifacts.push({
         id: uuid(),
         name: 'PRD.json',
         type: 'json',
         content: MOCK_PRD
       });
-      this.addLog(projectId, AgentRole.PRODUCT_MANAGER, 'PRD Published. Handing off to Architecture Team.', 'success');
+      this.addLog(projectId, AgentRole.PRODUCT_MANAGER, 'PRD Published. Handing off to Engineering Leaders.', 'success');
       project.status = ProjectStatus.ARCHITECTING;
       project.progress = 15;
     }
 
-    // --- PHASE 2: ARCHITECT & DESIGN (RAG + UI/UX) ---
-    if (tick === 8) {
+    // --- PHASE 2: ARCHITECT & DESIGN ---
+    if (tick === 9) {
       this.addLog(projectId, AgentRole.UI_UX_DESIGNER, 'Creating high-fidelity mockups and design system tokens.', 'info');
     }
-    if (tick === 9) {
-      this.addLog(projectId, AgentRole.ARCHITECT, 'RAG: Querying Vector DB for similar system designs...', 'warning');
-    }
     if (tick === 10) {
+      this.addLog(projectId, AgentRole.ARCHITECT, 'Designing system architecture and data flow diagrams.', 'info');
+    }
+    if (tick === 11) {
+      this.addLog(projectId, AgentRole.CTO, 'Reviewing tech stack: FastAPI, React, PostgreSQL. Performance and scalability verified.', 'success');
       project.artifacts.push({
         id: uuid(),
         name: 'design/theme.css',
         type: 'code',
         content: `:root {\n  --primary: #3b82f6;\n  --background: #0f172a;\n  --surface: #1e293b;\n  --text: #f8fafc;\n}`
       });
-      this.addLog(projectId, AgentRole.UI_UX_DESIGNER, 'Design System finalized. Exporting CSS variables.', 'success');
     }
-    if (tick === 11) {
-      this.addLog(projectId, AgentRole.ARCHITECT, 'Retrieved 3 high-confidence patterns. Creating Microservices architecture.', 'info');
+    if (tick === 12) {
+      this.addLog(projectId, AgentRole.DATABASE_ENGINEER, 'Generating normalized ERD and optimizing index strategies.', 'info');
+      project.artifacts.push({
+        id: uuid(),
+        name: 'architecture/database_schema.sql',
+        type: 'code',
+        content: `CREATE TABLE users (\n    id UUID PRIMARY KEY,\n    email VARCHAR(255) UNIQUE,\n    created_at TIMESTAMP\n);\n\nCREATE TABLE tasks (\n    id UUID PRIMARY KEY,\n    user_id UUID REFERENCES users(id),\n    title TEXT,\n    status VARCHAR(50)\n);`
+      });
     }
-    if (tick === 13) {
+    if (tick === 14) {
       project.artifacts.push({
         id: uuid(),
         name: 'architecture/system_design.json',
@@ -145,11 +155,10 @@ class SimulationService {
       project.progress = 30;
       project.status = ProjectStatus.RACE_MODE;
       project.candidates = JSON.parse(JSON.stringify(INITIAL_CANDIDATES)); 
-      this.addLog(projectId, AgentRole.ENGINEER, 'RACE MODE STARTED: Spawning GPT-4, Claude-3.5, and Llama-70b agents.', 'warning');
     }
 
-    // --- PHASE 3: RACE MODE (Engineer + QA + Frontend/Backend Devs) ---
-    if (tick > 13 && tick < 32) {
+    // --- PHASE 3: RACE MODE ---
+    if (tick > 14 && tick < 32) {
       project.candidates.forEach(c => {
         if (c.status === 'generating') {
            if (Math.random() > 0.3) c.unitTestsPassed += Math.floor(Math.random() * 5);
@@ -167,130 +176,86 @@ class SimulationService {
         }
       });
       
-      // Interleave developer logs
-      if (tick === 16) {
-        this.addLog(projectId, AgentRole.BACKEND_DEVELOPER, 'Structuring database schema and API endpoints...', 'info');
-      }
-      if (tick === 19) {
-        this.addLog(projectId, AgentRole.FRONTEND_DEVELOPER, 'Scaffolding React components based on UI designs...', 'info');
-      }
-      if (tick === 24) {
-        this.addLog(projectId, AgentRole.BACKEND_DEVELOPER, 'Optimizing query performance and implementing caching layer.', 'info');
-      }
-      if (tick === 28) {
-         this.addLog(projectId, AgentRole.FRONTEND_DEVELOPER, 'Integrating API clients and state management.', 'info');
-      }
+      if (tick === 17) this.addLog(projectId, AgentRole.BACKEND_DEVELOPER, 'Implementing core API business logic...', 'info');
+      if (tick === 20) this.addLog(projectId, AgentRole.FRONTEND_DEVELOPER, 'Building responsive UI components...', 'info');
+      if (tick === 23) this.addLog(projectId, AgentRole.DATABASE_ENGINEER, 'Refining SQL queries and implementing connection pooling.', 'info');
+      if (tick === 26) this.addLog(projectId, AgentRole.SCRUM_MASTER, 'Daily standup: Resolving race-condition blockers between agents.', 'info');
 
-      const models = ['gpt-4', 'claude-3.5', 'llama-70b'];
-      if (tick % 4 === 0) { // Slower generic log
-        const model = models[tick % 3];
-        this.addLog(projectId, AgentRole.ENGINEER, `[${model}] Generating core modules...`, 'info');
+      if (tick % 6 === 0) {
+        this.addLog(projectId, AgentRole.ENGINEER, `Competing swarms are processing logic modules...`, 'info');
       }
     }
 
     if (tick === 32) {
-       // Evaluate Candidates
-       const c1 = project.candidates[0]; // GPT-4
+       const c1 = project.candidates[0];
        c1.status = 'complete'; c1.coverage = 92.5; c1.securityScore = 9; c1.maintainabilityIndex = 88; c1.executability = 98;
-       
-       const c2 = project.candidates[1]; // Claude
+       const c2 = project.candidates[1];
        c2.status = 'complete'; c2.coverage = 95.2; c2.securityScore = 10; c2.maintainabilityIndex = 94; c2.executability = 100;
-
-       const c3 = project.candidates[2]; // Llama
+       const c3 = project.candidates[2];
        c3.status = 'complete'; c3.coverage = 84.1; c3.securityScore = 7; c3.maintainabilityIndex = 76; c3.executability = 91;
 
-       this.addLog(projectId, AgentRole.QA, 'Race complete. Analyzing metrics...', 'info');
+       this.addLog(projectId, AgentRole.QA, 'Race complete. Analyzing metrics for final selection...', 'info');
        project.progress = 60;
     }
 
     if (tick === 34) {
-      // Select Winner (Claude)
       project.candidates[1].selected = true;
-      this.addLog(projectId, AgentRole.QA, 'Selected: Claude-3.5 (Best Maintainability & Security).', 'success');
-      this.addLog(projectId, AgentRole.ENGINEER, 'Merging winning codebase...', 'success');
+      this.addLog(projectId, AgentRole.CTO, 'Claude-3.5 selected for core implementation. Merging to main branch.', 'success');
       
       project.status = ProjectStatus.DEPLOYING;
       project.progress = 75;
       
-      // Artifacts per PDF directory structure
       project.artifacts.push({
         id: uuid(),
         name: 'backend/app/main.py',
         type: 'code',
         content: `from fastapi import FastAPI\n\napp = FastAPI(title="Task Manager API")\n\n@app.get("/")\ndef read_root():\n    return {"Status": "Active"}`
       });
-      project.artifacts.push({
-        id: uuid(),
-        name: 'frontend/src/App.tsx',
-        type: 'code',
-        content: `import React from 'react';\n\nexport const App = () => {\n  return <div className="p-4">AdvancedAI DevTeam Generated App</div>;\n};`
-      });
-      project.artifacts.push({
-        id: uuid(),
-        name: 'scripts/dev.sh',
-        type: 'code',
-        content: `#!/bin/bash\n# Boots backend and frontend\nuvicorn backend.app.main:app --reload & \ncd frontend && npm start`
-      });
     }
 
-    // --- PHASE 4: GEN AI ENGINEER & ML OPS (Optimization & Pipelines) ---
+    // --- PHASE 4: SPECIALIZED ENGINEERING ---
     if (tick === 36) {
-      this.addLog(projectId, AgentRole.GEN_AI_ENGINEER, 'Optimizing system prompts and configuring embedding models...', 'info');
-      project.artifacts.push({
-        id: uuid(),
-        name: 'ai/config/prompts.yaml',
-        type: 'yaml',
-        content: `system_prompts:\n  task_classifier:\n    role: "Classifier"\n    instruction: "You are an AI that classifies engineering tasks into categories."\n  code_generator:\n    role: "Developer"\n    instruction: "Generate clean, pythonic code following PEP-8 standards."\nmodels:\n  embedding: "text-embedding-004"\n  generation: "gemini-1.5-pro"`
-      });
-    }
-
-    if (tick === 37) {
-      this.addLog(projectId, AgentRole.ML_OPS, 'Setting up MLOps pipeline: Model Registry, Feature Store, and Drift Monitoring.', 'info');
-      project.artifacts.push({
-        id: uuid(),
-        name: 'ai/mlops/monitoring.yaml',
-        type: 'yaml',
-        content: `apiVersion: monitoring.coreos.com/v1\nkind: ServiceMonitor\nmetadata:\n  name: model-drift-monitor\nspec:\n  selector:\n    matchLabels:\n      app: task-classifier\n  endpoints:\n  - port: metrics\n    interval: 30s\n    path: /metrics/drift`
-      });
+      this.addLog(projectId, AgentRole.GEN_AI_ENGINEER, 'Fine-tuning system prompts and RAG embeddings.', 'info');
+      this.addLog(projectId, AgentRole.ML_OPS, 'Initializing model monitoring and automated retraining pipelines.', 'info');
     }
 
     // --- PHASE 5: DEVOPS & SECURITY ---
     if (tick === 38) {
-       this.addLog(projectId, AgentRole.DEVOPS, 'Generating Helm Charts and Terraform IaC...', 'info');
-       project.artifacts.push({
-         id: uuid(),
-         name: 'infrastructure/kubernetes/deployment.yaml',
-         type: 'yaml',
-         content: `apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: backend\nspec:\n  replicas: 3\n  selector:\n    matchLabels:\n      app: backend`
-       });
-       project.artifacts.push({
-         id: uuid(),
-         name: 'infrastructure/terraform/main.tf',
-         type: 'code',
-         content: `provider "aws" {\n  region = "us-east-1"\n}\n\nresource "aws_s3_bucket" "artifacts" {\n  bucket = "devteam-artifacts"\n}`
-       });
+       this.addLog(projectId, AgentRole.DEVOPS, 'Generating Kubernetes manifests and CI/CD workflows.', 'info');
+       this.addLog(projectId, AgentRole.SECURITY, 'Running automated penetration tests and dependency audits.', 'warning');
     }
     
     if (tick === 40) {
-       this.addLog(projectId, AgentRole.SECURITY, 'SAST Scan passed. Dependency check: Clean.', 'success');
-       project.progress = 95;
+       this.addLog(projectId, AgentRole.SECURITY, 'Compliance check passed. Artifacts signed.', 'success');
+       project.progress = 90;
     }
 
-    // --- PHASE 6: DOCS ---
+    // --- PHASE 6: DOCUMENTATION & COMPLETION ---
     if (tick === 42) {
-      this.addLog(projectId, AgentRole.DOCS, 'Generating README.md and API.md...', 'info');
+      this.addLog(projectId, AgentRole.TECHNICAL_WRITER, 'Authoring comprehensive API documentation and setup guides.', 'info');
+      project.artifacts.push({
+        id: uuid(),
+        name: 'docs/API_REFERENCE.md',
+        type: 'markdown',
+        content: '# API Reference\n\n## Endpoint: GET /\nReturns system status.\n\n## Endpoint: POST /tasks\nCreates a new task.'
+      });
+    }
+
+    if (tick === 43) {
+      this.addLog(projectId, AgentRole.DOCS, 'Packaging documentation for end-user delivery.', 'info');
       project.artifacts.push({
         id: uuid(),
         name: 'README.md',
         type: 'markdown',
-        content: `# Project Overview\nGenerated by AdvancedAI DevTeam.\n\n## Setup\nRun ./scripts/setup.sh`
+        content: `# ${project.name}\nGenerated by AdvancedAI DevTeam.\n\n## Run Locally\n\`\`\`bash\n./scripts/dev.sh\n\`\`\``
       });
     }
 
     if (tick === 45) {
       project.status = ProjectStatus.COMPLETED;
       project.progress = 100;
-      this.addLog(projectId, AgentRole.IT_PROJECT_MANAGER, 'Project deliverables accepted. Sprint complete.', 'success');
+      this.addLog(projectId, AgentRole.CEO, 'Project completed successfully. Deliverables ready for production.', 'success');
+      this.addLog(projectId, AgentRole.COO, 'Releasing compute resources. Operations finalized.', 'info');
       
       clearInterval(this.intervalIds.get(projectId));
       this.intervalIds.delete(projectId);
