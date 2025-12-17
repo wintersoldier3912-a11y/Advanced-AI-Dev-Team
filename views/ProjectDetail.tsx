@@ -108,6 +108,7 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
     AgentRole.BACKEND_DEVELOPER,
     AgentRole.QA,
     AgentRole.GEN_AI_ENGINEER,
+    AgentRole.ML_OPS,
     AgentRole.DEVOPS,
     AgentRole.SECURITY,
     AgentRole.DOCS
@@ -217,7 +218,7 @@ const getActiveAgent = (status: ProjectStatus, role: AgentRole): boolean => {
   if (status === ProjectStatus.ARCHITECTING && (role === AgentRole.ARCHITECT || role === AgentRole.UI_UX_DESIGNER)) return true;
   if (status === ProjectStatus.RACE_MODE && (role === AgentRole.ENGINEER || role === AgentRole.FRONTEND_DEVELOPER || role === AgentRole.BACKEND_DEVELOPER)) return true;
   if (status === ProjectStatus.TESTING && role === AgentRole.QA) return true;
-  if (status === ProjectStatus.DEPLOYING && (role === AgentRole.DEVOPS || role === AgentRole.SECURITY || role === AgentRole.GEN_AI_ENGINEER)) return true;
+  if (status === ProjectStatus.DEPLOYING && (role === AgentRole.DEVOPS || role === AgentRole.SECURITY || role === AgentRole.GEN_AI_ENGINEER || role === AgentRole.ML_OPS)) return true;
   if (status === ProjectStatus.COMPLETED && (role === AgentRole.DOCS || role === AgentRole.IT_PROJECT_MANAGER)) return true;
   return false;
 };

@@ -13,6 +13,7 @@ export const AGENT_COLORS: Record<AgentRole, string> = {
   [AgentRole.ENGINEER]: 'text-blue-400',
   [AgentRole.QA]: 'text-yellow-400',
   [AgentRole.GEN_AI_ENGINEER]: 'text-indigo-400',
+  [AgentRole.ML_OPS]: 'text-emerald-400',
   [AgentRole.DEVOPS]: 'text-cyan-400',
   [AgentRole.SECURITY]: 'text-red-400',
   [AgentRole.DOCS]: 'text-green-400',

@@ -233,7 +233,7 @@ class SimulationService {
       });
     }
 
-    // --- PHASE 4: GEN AI ENGINEER (Optimization) ---
+    // --- PHASE 4: GEN AI ENGINEER & ML OPS (Optimization & Pipelines) ---
     if (tick === 36) {
       this.addLog(projectId, AgentRole.GEN_AI_ENGINEER, 'Optimizing system prompts and configuring embedding models...', 'info');
       project.artifacts.push({
@@ -241,6 +241,16 @@ class SimulationService {
         name: 'ai/config/prompts.yaml',
         type: 'yaml',
         content: `system_prompts:\n  task_classifier:\n    role: "Classifier"\n    instruction: "You are an AI that classifies engineering tasks into categories."\n  code_generator:\n    role: "Developer"\n    instruction: "Generate clean, pythonic code following PEP-8 standards."\nmodels:\n  embedding: "text-embedding-004"\n  generation: "gemini-1.5-pro"`
+      });
+    }
+
+    if (tick === 37) {
+      this.addLog(projectId, AgentRole.ML_OPS, 'Setting up MLOps pipeline: Model Registry, Feature Store, and Drift Monitoring.', 'info');
+      project.artifacts.push({
+        id: uuid(),
+        name: 'ai/mlops/monitoring.yaml',
+        type: 'yaml',
+        content: `apiVersion: monitoring.coreos.com/v1\nkind: ServiceMonitor\nmetadata:\n  name: model-drift-monitor\nspec:\n  selector:\n    matchLabels:\n      app: task-classifier\n  endpoints:\n  - port: metrics\n    interval: 30s\n    path: /metrics/drift`
       });
     }
 

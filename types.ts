@@ -11,6 +11,7 @@ export enum AgentRole {
   ENGINEER = 'Engineer',
   QA = 'QA',
   GEN_AI_ENGINEER = 'Gen AI Engineer',
+  ML_OPS = 'ML Ops',
   DEVOPS = 'DevOps',
   SECURITY = 'Security',
   DOCS = 'Docs',
