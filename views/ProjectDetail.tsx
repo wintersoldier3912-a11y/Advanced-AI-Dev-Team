@@ -3,7 +3,7 @@ import { Project, ProjectStatus, Artifact, Candidate, AgentRole } from '../types
 import { simulationService } from '../services/simulationService';
 import { Terminal } from '../components/Terminal';
 import { Button, Card, Badge, ProgressBar } from '../components/ui';
-import { ArrowLeft, Play, FileText, Code, GitCommit, CheckCircle, Shield, AlertTriangle, Trophy, Clock, Cpu, Activity, Zap, Copy, Check, Loader2 } from 'lucide-react';
+import { ArrowLeft, Play, FileText, Code, GitCommit, CheckCircle, Shield, AlertTriangle, Trophy, Clock, Cpu, Activity, Zap, Copy, Check, Loader2, ArrowRight } from 'lucide-react';
 import { AGENT_COLORS } from '../constants';
 import Prism from 'prismjs';
 import { load, dump } from 'js-yaml';
@@ -90,6 +90,28 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
     }
   };
 
+  const handleSelectArtifact = (id: string) => {
+    setSelectedArtifactId(id);
+    setActiveTab('artifacts');
+  };
+
+  const agentOrder = [
+    AgentRole.IT_PROJECT_MANAGER,
+    AgentRole.PRODUCT_MANAGER,
+    AgentRole.PRODUCT_OWNER,
+    AgentRole.AI_PRODUCT_MANAGER,
+    AgentRole.UI_UX_DESIGNER,
+    AgentRole.ARCHITECT,
+    AgentRole.ENGINEER,
+    AgentRole.FRONTEND_DEVELOPER,
+    AgentRole.BACKEND_DEVELOPER,
+    AgentRole.QA,
+    AgentRole.GEN_AI_ENGINEER,
+    AgentRole.DEVOPS,
+    AgentRole.SECURITY,
+    AgentRole.DOCS
+  ];
+
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background">
       <header className="h-16 border-b border-gray-800 bg-surface flex items-center px-6 justify-between shrink-0">
@@ -123,11 +145,11 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
       <div className="flex-1 flex overflow-hidden">
         <div className="w-64 bg-surface border-r border-gray-800 p-4 flex flex-col gap-4 overflow-y-auto hidden md:flex">
           <h3 className="text-xs uppercase text-gray-500 font-bold tracking-wider mb-2">Agent Swarm</h3>
-          {[AgentRole.PRODUCT_MANAGER, AgentRole.ARCHITECT, AgentRole.ENGINEER, AgentRole.QA, AgentRole.DEVOPS, AgentRole.SECURITY].map(role => {
+          {agentOrder.map(role => {
              const isActive = getActiveAgent(project.status, role);
              return (
                <div key={role} className={`p-3 rounded-lg border transition-all duration-300 ${isActive ? 'bg-white/5 border-primary/50 shadow-lg shadow-primary/10' : 'bg-transparent border-transparent opacity-50'}`}>
-                 <div className={`text-sm font-bold ${AGENT_COLORS[role]} mb-1`}>{role}</div>
+                 <div className={`text-sm font-bold ${AGENT_COLORS[role]} mb-1 truncate`}>{role}</div>
                  <div className="text-xs text-gray-400 flex items-center gap-2">
                    <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-400 animate-blink' : 'bg-gray-600'}`} />
                    {isActive ? 'Active' : 'Standby'}
@@ -163,7 +185,14 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
 
           <div className={`flex-1 overflow-y-auto p-6 bg-background relative ${activeTab === 'artifacts' ? 'flex flex-col' : ''}`}>
              {activeTab === 'overview' && <OverviewTab project={project} />}
-             {activeTab === 'race' && <RaceModeTab candidates={project.candidates} onViewArtifacts={handleViewArtifacts} />}
+             {activeTab === 'race' && (
+               <RaceModeTab 
+                 candidates={project.candidates} 
+                 artifacts={project.artifacts} 
+                 onViewArtifacts={handleViewArtifacts} 
+                 onSelectArtifact={handleSelectArtifact}
+               />
+             )}
              {activeTab === 'artifacts' && (
                <ArtifactsTab 
                  artifacts={project.artifacts} 
@@ -183,12 +212,12 @@ export const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId, onBack 
 };
 
 const getActiveAgent = (status: ProjectStatus, role: AgentRole): boolean => {
-  if (status === ProjectStatus.PLANNING && role === AgentRole.PRODUCT_MANAGER) return true;
-  if (status === ProjectStatus.ARCHITECTING && role === AgentRole.ARCHITECT) return true;
-  if (status === ProjectStatus.RACE_MODE && role === AgentRole.ENGINEER) return true;
+  if (status === ProjectStatus.PLANNING && (role === AgentRole.PRODUCT_MANAGER || role === AgentRole.IT_PROJECT_MANAGER || role === AgentRole.PRODUCT_OWNER || role === AgentRole.AI_PRODUCT_MANAGER)) return true;
+  if (status === ProjectStatus.ARCHITECTING && (role === AgentRole.ARCHITECT || role === AgentRole.UI_UX_DESIGNER)) return true;
+  if (status === ProjectStatus.RACE_MODE && (role === AgentRole.ENGINEER || role === AgentRole.FRONTEND_DEVELOPER || role === AgentRole.BACKEND_DEVELOPER)) return true;
   if (status === ProjectStatus.TESTING && role === AgentRole.QA) return true;
-  if (status === ProjectStatus.DEPLOYING && (role === AgentRole.DEVOPS || role === AgentRole.SECURITY)) return true;
-  if (status === ProjectStatus.COMPLETED && role === AgentRole.DOCS) return true;
+  if (status === ProjectStatus.DEPLOYING && (role === AgentRole.DEVOPS || role === AgentRole.SECURITY || role === AgentRole.GEN_AI_ENGINEER)) return true;
+  if (status === ProjectStatus.COMPLETED && (role === AgentRole.DOCS || role === AgentRole.IT_PROJECT_MANAGER)) return true;
   return false;
 };
 
@@ -219,7 +248,17 @@ const OverviewTab = ({ project }: { project: Project }) => (
   </div>
 );
 
-const RaceModeTab = ({ candidates, onViewArtifacts }: { candidates: Candidate[], onViewArtifacts: () => void }) => (
+const RaceModeTab = ({ 
+  candidates, 
+  artifacts,
+  onViewArtifacts, 
+  onSelectArtifact 
+}: { 
+  candidates: Candidate[], 
+  artifacts: Artifact[], 
+  onViewArtifacts: () => void,
+  onSelectArtifact: (id: string) => void
+}) => (
   <div className="h-full flex flex-col">
     <div className="text-center mb-8">
       <h2 className="text-2xl font-bold text-white mb-2 flex items-center justify-center gap-2">
@@ -279,8 +318,26 @@ const RaceModeTab = ({ candidates, onViewArtifacts }: { candidates: Candidate[],
 
              {candidate.selected && (
                <div className="mt-6 pt-4 border-t border-gray-700">
-                 <Button onClick={onViewArtifacts} variant="primary" className="w-full justify-center">
-                    <FileText size={16} /> View Source Code
+                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Generated Artifacts</h4>
+                 <div className="space-y-2 mb-4 bg-black/20 rounded-lg p-2">
+                    {artifacts.filter(a => a.type === 'code' || a.name.includes('.yaml') || a.name.includes('.tf')).length > 0 ? (
+                       artifacts.filter(a => a.type === 'code' || a.name.includes('.yaml') || a.name.includes('.tf')).slice(0, 5).map(file => (
+                          <button 
+                            key={file.id}
+                            onClick={() => onSelectArtifact(file.id)}
+                            className="flex items-center gap-2 text-sm text-gray-300 hover:text-white hover:bg-white/10 transition-all w-full text-left p-2 rounded group"
+                          >
+                            <Code size={14} className="text-primary group-hover:scale-110 transition-transform" />
+                            <span className="truncate">{file.name}</span>
+                            <ArrowRight size={12} className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity text-primary" />
+                          </button>
+                       ))
+                    ) : (
+                      <div className="text-xs text-gray-500 p-2 italic">Building artifacts...</div>
+                    )}
+                 </div>
+                 <Button onClick={onViewArtifacts} variant="secondary" className="w-full justify-center text-xs">
+                    View All Files
                  </Button>
                </div>
              )}
